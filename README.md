@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Student Course & University Prediction
 
-## Getting Started
+Simple ML prediction app using FastAPI (Python) backend and React Vite frontend.
 
-First, run the development server:
+## Quick Start
 
+### 1. Setup Backend
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Setup Frontend
+```bash
+cd frontend
+npm install
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 3. Run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Terminal 1 - Backend:**
+```bash
+./run-backend.sh
+# Or: cd backend && source venv/bin/activate && uvicorn app:app --reload --port 8000
+```
 
-## Learn More
+**Terminal 2 - Frontend:**
+```bash
+./run-frontend.sh
+# Or: cd frontend && npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open http://localhost:5173
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+.
+├── backend/          # FastAPI Python backend
+│   ├── app.py       # Main API server
+│   ├── dataset.csv  # Training data
+│   └── requirements.txt
+├── frontend/        # React Vite frontend
+│   ├── src/
+│   └── package.json
+└── START.md        # Detailed setup guide
+```
 
-## Deploy on Vercel
+## Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- ✅ Fast predictions (model loads once at startup)
+- ✅ Simple architecture (FastAPI + React)
+- ✅ Clean UI with dropdowns
+- ✅ Handles invalid data (NQC values)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Endpoints
+
+- `GET /` - Health check
+- `GET /api/options` - Get unique streams and districts
+- `POST /api/predict` - Make prediction
