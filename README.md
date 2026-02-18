@@ -4,7 +4,32 @@ Simple ML prediction app using FastAPI (Python) backend and React Vite frontend.
 
 ## Quick Start
 
-### 1. Setup Backend
+### Option 1: Run with Docker (Recommended)
+
+Make sure [Docker](https://docs.docker.com/get-docker/) and Docker Compose are installed.
+
+**Start both services:**
+```bash
+docker compose up --build
+```
+
+**Run in background:**
+```bash
+docker compose up --build -d
+```
+
+**Stop services:**
+```bash
+docker compose down
+```
+
+Open http://localhost:5173
+
+---
+
+### Option 2: Run Manually
+
+#### 1. Setup Backend
 ```bash
 cd backend
 python3 -m venv venv
@@ -12,13 +37,13 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Setup Frontend
+#### 2. Setup Frontend
 ```bash
 cd frontend
 npm install
 ```
 
-### 3. Run
+#### 3. Run
 
 **Terminal 1 - Backend:**
 ```bash
