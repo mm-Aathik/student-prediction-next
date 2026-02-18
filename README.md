@@ -94,6 +94,34 @@ Open http://localhost:5173
 
 ## API Endpoints
 
-- `GET /` - Health check
-- `GET /api/options` - Get unique streams and districts
-- `POST /api/predict` - Make prediction
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Health check — confirms API is running |
+| `GET` | `/api/options` | Returns available streams and districts for dropdowns |
+| `GET` | `/api/model-info` | Returns model evaluation metrics, hyperparameters, and dataset stats |
+| `POST` | `/api/predict` | Predicts top courses with confidence scores based on Z-Score, stream, and district |
+| `POST` | `/api/explain` | Returns SHAP-based explanation for a prediction (feature contributions) |
+
+### Request Body (`/api/predict` & `/api/explain`)
+
+```json
+{
+  "zscore": 1.85,
+  "stream": "Physical Science",
+  "district": "Colombo"
+}
+```
+
+### Sample Response (`/api/predict`)
+
+```json
+{
+  "prediction": "Engineering - University of Moratuwa",
+  "confidence": 0.82,
+  "top_3": [
+    { "course": "Engineering - University of Moratuwa", "confidence": 0.82 },
+    { "course": "Engineering - University of Peradeniya", "confidence": 0.10 },
+    { "course": "IT - University of Colombo", "confidence": 0.05 }
+  ]
+}
+```
