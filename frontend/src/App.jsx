@@ -172,6 +172,21 @@ function App() {
             {explanation && (
               <div className="explanation">
                 <h3>Why this prediction? (SHAP Analysis)</h3>
+
+                {explanation.summary && (
+                  <div className="explain-summary">
+                    <p>{explanation.summary}</p>
+                  </div>
+                )}
+
+                {explanation.simple_explanations?.map((item, index) => (
+                  <div key={index} className="simple-explain-card">
+                    <span className="simple-icon">{item.icon}</span>
+                    <p className="simple-text">{item.text}</p>
+                  </div>
+                ))}
+
+                <h4 className="technical-heading">Technical Details</h4>
                 <p className="explanation-subtitle">Feature contributions to: <strong>{explanation.predicted_course}</strong></p>
                 <div className="shap-bars">
                   {explanation.contributions?.map((item, index) => {
@@ -197,7 +212,7 @@ function App() {
                   })}
                 </div>
                 <p className="explanation-note">
-                  <strong>Positive</strong> values push toward this prediction, <strong>negative</strong> values push away from it.
+                  <strong>Green (positive)</strong> = pushes toward this course. <strong>Red (negative)</strong> = pushes away from it.
                 </p>
               </div>
             )}

@@ -261,10 +261,69 @@ def explain_prediction(request: PredictionRequest):
         # Sort by absolute SHAP value (most important first)
         contributions.sort(key=lambda x: abs(x['shap_value']), reverse=True)
         
+        # Load dataset stats for comparative explanations
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        dataset_path = os.path.join(script_dir, 'dataset.csv')
+        dataset_full = pd.read_csv(dataset_path)
+        dataset_full['Zscore'] = pd.to_numeric(dataset_full['Zscore'], errors='coerce')
+        
+        # Get stats for the predicted course
+        course_data = dataset_full[dataset_full['Matched_Course_University'] == prediction]
+        overall_mean = dataset_full['Zscore'].mean()
+        course_mean = course_data['Zscore'].mean() if len(course_data) > 0 else overall_mean
+        course_min = course_data['Zscore'].min() if len(course_data) > 0 else 0
+        
+        # How many students from this stream got this course
+        stream_course = course_data[course_data['Stream'] == request.stream]
+        stream_total = dataset_full[dataset_full['Stream'] == request.stream]
+        
+        # How many students from this district got this course
+        district_course = course_data[course_data['District'] == request.district]
+        district_total = dataset_full[dataset_full['District'] == request.district]
+        
+        # Percentage contributions
+        total_shap = sum(abs(c['shap_value']) for c in contributions)
+        
+        simple_explanations = []
+        for c in contributions:
+            pct = round((abs(c['shap_value']) / total_shap) * 100) if total_shap > 0 else 33
+            direction = "toward" if c['shap_value'] > 0 else "away from"
+            
+            if c['feature'] == 'Z-Score':
+                diff = request.zscore - course_mean
+                if diff >= 0:
+                    comparison = f"above the average ({course_mean:.2f}) for this course"
+                else:
+                    comparison = f"below the average ({course_mean:.2f}) for this course"
+                simple_explanations.append({
+                    "icon": "📊",
+                    "text": f"Z-Score {request.zscore} is {comparison}. Min cutoff in data: {course_min:.2f}. Contributes {pct}% of the decision, pushing {direction} this course."
+                })
+            elif c['feature'] == 'Stream':
+                stream_count = len(stream_course)
+                stream_pct = round((stream_count / len(course_data)) * 100) if len(course_data) > 0 else 0
+                simple_explanations.append({
+                    "icon": "📚",
+                    "text": f"{stream_pct}% of students admitted to this course were from {c['value']}. Contributes {pct}% of the decision, pushing {direction} this course."
+                })
+            elif c['feature'] == 'District':
+                dist_count = len(district_course)
+                dist_pct = round((dist_count / len(course_data)) * 100) if len(course_data) > 0 else 0
+                simple_explanations.append({
+                    "icon": "📍",
+                    "text": f"{dist_count} out of {len(course_data)} students admitted to this course were from {c['value']} ({dist_pct}%). Contributes {pct}% of the decision, pushing {direction} this course."
+                })
+        
+        # Overall summary
+        top = contributions[0]
+        summary = f"Predicted {prediction.split('(')[0].strip()} based on your inputs. Your {top['feature']} had the most influence ({round((abs(top['shap_value'])/total_shap)*100)}% of the decision)."
+        
         return {
             "predicted_course": prediction,
             "base_value": round(float(base), 6),
-            "contributions": contributions
+            "contributions": contributions,
+            "simple_explanations": simple_explanations,
+            "summary": summary
         }
     except Exception as e:
         return {"error": str(e)}
