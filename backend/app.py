@@ -287,31 +287,50 @@ def explain_prediction(request: PredictionRequest):
         simple_explanations = []
         for c in contributions:
             pct = round((abs(c['shap_value']) / total_shap) * 100) if total_shap > 0 else 33
-            direction = "toward" if c['shap_value'] > 0 else "away from"
+            influence = "supports" if c['shap_value'] > 0 else "opposes"
             
             if c['feature'] == 'Z-Score':
-                diff = request.zscore - course_mean
-                if diff >= 0:
-                    comparison = f"above the average ({course_mean:.2f}) for this course"
+                # Round both to 2 decimals before comparing to avoid "below 1.60" when input is 1.6
+                zscore_rounded = round(request.zscore, 2)
+                mean_rounded = round(course_mean, 2)
+                if abs(zscore_rounded - mean_rounded) < 0.01:
+                    comparison = f"right at the average ({mean_rounded:.2f})"
+                elif zscore_rounded > mean_rounded:
+                    comparison = f"above the average ({mean_rounded:.2f})"
                 else:
-                    comparison = f"below the average ({course_mean:.2f}) for this course"
+                    comparison = f"below the average ({mean_rounded:.2f})"
                 simple_explanations.append({
                     "icon": "📊",
-                    "text": f"Z-Score {request.zscore} is {comparison}. Min cutoff in data: {course_min:.2f}. Contributes {pct}% of the decision, pushing {direction} this course."
+                    "text": f"Your Z-Score ({request.zscore}) is {comparison} for this course (min cutoff: {course_min:.2f}). This {influence} the prediction ({pct}% influence)."
                 })
             elif c['feature'] == 'Stream':
-                stream_count = len(stream_course)
+                # Re-filter stream data to be safe
+                actual_stream = request.stream.strip()
+                stream_in_course = course_data[course_data['Stream'].str.strip() == actual_stream]
+                stream_count = len(stream_in_course)
                 stream_pct = round((stream_count / len(course_data)) * 100) if len(course_data) > 0 else 0
+                if stream_pct == 0:
+                    stream_desc = f"No students from {actual_stream} were historically admitted to this course."
+                else:
+                    stream_desc = f"{stream_pct}% of students admitted to this course were from {actual_stream} ({stream_count} out of {len(course_data)})."
                 simple_explanations.append({
                     "icon": "📚",
-                    "text": f"{stream_pct}% of students admitted to this course were from {c['value']}. Contributes {pct}% of the decision, pushing {direction} this course."
+                    "text": f"{stream_desc} The model {influence} this prediction based on stream ({pct}% influence)."
                 })
             elif c['feature'] == 'District':
-                dist_count = len(district_course)
-                dist_pct = round((dist_count / len(course_data)) * 100) if len(course_data) > 0 else 0
+                # Re-filter here with the actual input district to be safe
+                actual_district = request.district.strip()
+                dist_in_course = course_data[course_data['District'].str.strip() == actual_district]
+                dist_count = len(dist_in_course)
+                total_in_course = len(course_data)
+                dist_pct = round((dist_count / total_in_course) * 100) if total_in_course > 0 else 0
+                if dist_count == 0:
+                    dist_desc = f"No students from {actual_district} were historically admitted to this course."
+                else:
+                    dist_desc = f"{dist_count} out of {total_in_course} students admitted to this course were from {actual_district} ({dist_pct}%)."
                 simple_explanations.append({
                     "icon": "📍",
-                    "text": f"{dist_count} out of {len(course_data)} students admitted to this course were from {c['value']} ({dist_pct}%). Contributes {pct}% of the decision, pushing {direction} this course."
+                    "text": f"{dist_desc} This {influence} the prediction ({pct}% influence)."
                 })
         
         # Overall summary
