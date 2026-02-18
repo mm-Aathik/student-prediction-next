@@ -14,6 +14,8 @@ function App() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [optionsLoading, setOptionsLoading] = useState(true)
+  const [explanation, setExplanation] = useState(null)
+  const [explaining, setExplaining] = useState(false)
 
   // Load options on mount
   useEffect(() => {
@@ -34,6 +36,7 @@ function App() {
     e.preventDefault()
     setError(null)
     setPrediction(null)
+    setExplanation(null)
     setLoading(true)
 
     try {
@@ -55,6 +58,22 @@ function App() {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleExplain = async () => {
+    setExplaining(true)
+    try {
+      const response = await axios.post(`${API_URL}/api/explain`, {
+        zscore: parseFloat(zscore),
+        stream: stream,
+        district: district
+      })
+      setExplanation(response.data)
+    } catch (err) {
+      setError('Failed to get explanation: ' + (err.response?.data?.error || err.message))
+    } finally {
+      setExplaining(false)
     }
   }
 
@@ -143,6 +162,43 @@ function App() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            <button onClick={handleExplain} disabled={explaining} className="explain-btn">
+              {explaining ? 'Analyzing...' : '🔍 Explain Why'}
+            </button>
+
+            {explanation && (
+              <div className="explanation">
+                <h3>Why this prediction? (SHAP Analysis)</h3>
+                <p className="explanation-subtitle">Feature contributions to: <strong>{explanation.predicted_course}</strong></p>
+                <div className="shap-bars">
+                  {explanation.contributions?.map((item, index) => {
+                    const maxVal = Math.max(...explanation.contributions.map(c => Math.abs(c.shap_value)))
+                    const barWidth = maxVal > 0 ? (Math.abs(item.shap_value) / maxVal) * 100 : 0
+                    return (
+                      <div key={index} className="shap-row">
+                        <div className="shap-label">
+                          <span className="shap-feature">{item.feature}</span>
+                          <span className="shap-input">= {item.value}</span>
+                        </div>
+                        <div className="shap-bar-container">
+                          <div
+                            className={`shap-bar ${item.impact}`}
+                            style={{ width: `${barWidth}%` }}
+                          />
+                          <span className={`shap-val ${item.impact}`}>
+                            {item.shap_value > 0 ? '+' : ''}{item.shap_value.toFixed(4)}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="explanation-note">
+                  <strong>Positive</strong> values push toward this prediction, <strong>negative</strong> values push away from it.
+                </p>
               </div>
             )}
           </div>

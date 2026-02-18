@@ -8,6 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
+import shap
+import numpy as np
 
 app = FastAPI()
 
@@ -25,6 +27,8 @@ model = None
 stream_encoder = None
 district_encoder = None
 stream_course_map = {}  # Map stream to valid courses
+explainer = None  # SHAP explainer
+feature_names = ['Z-Score', 'Stream', 'District']
 
 # Request model
 class PredictionRequest(BaseModel):
@@ -34,7 +38,7 @@ class PredictionRequest(BaseModel):
 
 def load_or_train_model():
     """Load model if exists, otherwise train and save it"""
-    global model, stream_encoder, district_encoder, stream_course_map
+    global model, stream_encoder, district_encoder, stream_course_map, explainer
     
     script_dir = os.path.dirname(os.path.abspath(__file__))
     dataset_path = os.path.join(script_dir, 'dataset.csv')
@@ -63,6 +67,8 @@ def load_or_train_model():
             stream_encoder = encoders['stream']
             district_encoder = encoders['district']
         
+        # Create SHAP explainer from loaded model
+        explainer = shap.TreeExplainer(model)
         print("Model loaded successfully!")
         return
     
@@ -106,6 +112,10 @@ def load_or_train_model():
         class_weight='balanced' # Handle class imbalance
     )
     model.fit(X_train, y_train)
+    
+    # Create SHAP explainer
+    explainer = shap.TreeExplainer(model)
+    print("SHAP explainer created!")
     
     # Evaluate model
     y_pred = model.predict(X_test)
@@ -201,6 +211,60 @@ def predict(request: PredictionRequest):
                 {"course": p['course'], "confidence": p['confidence']}
                 for p in top_3
             ]
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/explain")
+def explain_prediction(request: PredictionRequest):
+    """Explain a prediction using SHAP values"""
+    if model is None or explainer is None:
+        return {"error": "Model or explainer not loaded"}
+    
+    try:
+        # Encode inputs
+        stream_encoded = stream_encoder.transform([request.stream])[0]
+        district_encoded = district_encoder.transform([request.district])[0]
+        
+        input_data = pd.DataFrame(
+            [[request.zscore, stream_encoded, district_encoded]],
+            columns=['Zscore', 'Stream', 'District']
+        )
+        
+        # Get prediction
+        prediction = model.predict(input_data)[0]
+        
+        # Get SHAP values for this prediction
+        shap_values = explainer.shap_values(input_data)
+        
+        # Find the class index for the predicted course
+        class_idx = list(model.classes_).index(prediction)
+        
+        # shap_values shape: (samples, features, classes) for RandomForest
+        sv = shap_values[0]  # first sample, shape: (features, classes)
+        
+        # Get SHAP values for the predicted class
+        sv_for_class = sv[:, class_idx]  # shape: (features,)
+        base = explainer.expected_value[class_idx]
+        
+        # Build feature contributions
+        contributions = []
+        raw_feature_values = [request.zscore, request.stream, request.district]
+        for i, name in enumerate(feature_names):
+            contributions.append({
+                "feature": name,
+                "value": str(raw_feature_values[i]),
+                "shap_value": round(float(sv_for_class[i]), 6),
+                "impact": "positive" if sv_for_class[i] > 0 else "negative"
+            })
+        
+        # Sort by absolute SHAP value (most important first)
+        contributions.sort(key=lambda x: abs(x['shap_value']), reverse=True)
+        
+        return {
+            "predicted_course": prediction,
+            "base_value": round(float(base), 6),
+            "contributions": contributions
         }
     except Exception as e:
         return {"error": str(e)}
