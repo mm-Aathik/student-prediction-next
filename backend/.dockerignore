@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+model.pkl
+encoders.pkl
+.git
