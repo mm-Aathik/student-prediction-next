@@ -1,0 +1,164 @@
+{
+  "accuracy": 0.2727,
+  "top3_accuracy": 0.4861,
+  "top5_accuracy": 0.5783,
+  "f1_weighted": 0.2693,
+  "f1_macro": 0.2016,
+  "train_size": 18874,
+  "test_size": 4719,
+  "test_split": 0.2,
+  "num_classes": 330,
+  "feature_importances": [
+    {
+      "feature": "Z-Score",
+      "importance": 0.737
+    },
+    {
+      "feature": "District",
+      "importance": 0.1351
+    },
+    {
+      "feature": "Stream",
+      "importance": 0.1279
+    }
+  ],
+  "per_class_top15": [
+    {
+      "class": "Fisheries & Marine Sciences (University Of Ruhuna)",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 35
+    },
+    {
+      "class": "Engineering (Tm) (University Of Moratuwa)",
+      "precision": 0.357,
+      "recall": 0.167,
+      "f1": 0.227,
+      "support": 30
+    },
+    {
+      "class": "Information Technology (It) (University Of Moratuwa)",
+      "precision": 0.2,
+      "recall": 0.067,
+      "f1": 0.1,
+      "support": 30
+    },
+    {
+      "class": "Management (University Of Kelaniya)",
+      "precision": 0.595,
+      "recall": 0.786,
+      "f1": 0.677,
+      "support": 28
+    },
+    {
+      "class": "Arts (University Of Sri Jayewardenepura)",
+      "precision": 0.767,
+      "recall": 0.852,
+      "f1": 0.807,
+      "support": 27
+    },
+    {
+      "class": "Financial Engineering (University Of Kelaniya)",
+      "precision": 0.409,
+      "recall": 0.333,
+      "f1": 0.367,
+      "support": 27
+    },
+    {
+      "class": "Agriculture (University Of Jaffna)",
+      "precision": 0.214,
+      "recall": 0.12,
+      "f1": 0.154,
+      "support": 25
+    },
+    {
+      "class": "Animal Science & Fisheries (University Of Peradeniya)",
+      "precision": 0.143,
+      "recall": 0.08,
+      "f1": 0.103,
+      "support": 25
+    },
+    {
+      "class": "Aquatic Resources Technology (Uva Wellassa University Of Sri Lanka)",
+      "precision": 0.071,
+      "recall": 0.04,
+      "f1": 0.051,
+      "support": 25
+    },
+    {
+      "class": "Arabic Language (South Eastern University Of Sri Lanka)",
+      "precision": 0.692,
+      "recall": 0.72,
+      "f1": 0.706,
+      "support": 25
+    },
+    {
+      "class": "Architecture (University Of Moratuwa)",
+      "precision": 0.2,
+      "recall": 0.12,
+      "f1": 0.15,
+      "support": 25
+    },
+    {
+      "class": "Arts (University Of Peradeniya)",
+      "precision": 0.842,
+      "recall": 0.64,
+      "f1": 0.727,
+      "support": 25
+    },
+    {
+      "class": "Biochemistry & Molecular Biology (University Of Colombo)",
+      "precision": 0.308,
+      "recall": 0.16,
+      "f1": 0.211,
+      "support": 25
+    },
+    {
+      "class": "Business Science (University Of Moratuwa)",
+      "precision": 0.267,
+      "recall": 0.16,
+      "f1": 0.2,
+      "support": 25
+    },
+    {
+      "class": "Computer Science & Technology (Uva Wellassa University Of Sri Lanka)",
+      "precision": 0.2,
+      "recall": 0.12,
+      "f1": 0.15,
+      "support": 25
+    }
+  ],
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 25,
+    "min_samples_split": 5,
+    "min_samples_leaf": 2,
+    "max_features": "sqrt",
+    "class_weight": "balanced",
+    "random_state": 42
+  },
+  "dataset_info": {
+    "total_rows": 28825,
+    "rows_after_cleaning": 23593,
+    "num_features": 3,
+    "features": [
+      "Z-Score (numeric)",
+      "Stream (categorical, label-encoded)",
+      "District (categorical, label-encoded)"
+    ],
+    "target": "Matched_Course_University",
+    "num_streams": 8,
+    "num_districts": 25,
+    "num_courses": 330,
+    "zscore_min": -0.81,
+    "zscore_max": 3.31,
+    "zscore_mean": 1.25,
+    "preprocessing": [
+      "Converted Z-Score to numeric (coerced errors to NaN)",
+      "Dropped rows with missing Z-Score values",
+      "Label-encoded Stream and District columns",
+      "Applied class_weight='balanced' to handle class imbalance"
+    ]
+  }
+}

@@ -7,9 +7,10 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, f1_score, confusion_matrix
 import shap
 import numpy as np
+import json
 
 app = FastAPI()
 
@@ -28,6 +29,7 @@ stream_encoder = None
 district_encoder = None
 stream_course_map = {}  # Map stream to valid courses
 explainer = None  # SHAP explainer
+model_metrics = {}  # Evaluation metrics
 feature_names = ['Z-Score', 'Stream', 'District']
 
 # Request model
@@ -38,12 +40,13 @@ class PredictionRequest(BaseModel):
 
 def load_or_train_model():
     """Load model if exists, otherwise train and save it"""
-    global model, stream_encoder, district_encoder, stream_course_map, explainer
+    global model, stream_encoder, district_encoder, stream_course_map, explainer, model_metrics
     
     script_dir = os.path.dirname(os.path.abspath(__file__))
     dataset_path = os.path.join(script_dir, 'dataset.csv')
     model_path = os.path.join(script_dir, 'model.pkl')
     encoders_path = os.path.join(script_dir, 'encoders.pkl')
+    metrics_path = os.path.join(script_dir, 'metrics.json')
     
     # Build stream-course mapping (needed for validation) - do this first
     dataset_temp = pd.read_csv(dataset_path)
@@ -69,6 +72,13 @@ def load_or_train_model():
         
         # Create SHAP explainer from loaded model
         explainer = shap.TreeExplainer(model)
+        
+        # Load saved metrics
+        if os.path.exists(metrics_path):
+            with open(metrics_path, 'r') as f:
+                model_metrics = json.load(f)
+            print(f"Metrics loaded: accuracy={model_metrics.get('accuracy', 'N/A')}")
+        
         print("Model loaded successfully!")
         return
     
@@ -117,14 +127,16 @@ def load_or_train_model():
     explainer = shap.TreeExplainer(model)
     print("SHAP explainer created!")
     
-    # Evaluate model
+    # ====== Comprehensive Evaluation ======
     y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Model Accuracy: {accuracy:.2%}")
-    print(f"Training samples: {len(X_train)}, Test samples: {len(X_test)}")
-    
-    # Show top predictions accuracy
     y_pred_proba = model.predict_proba(X_test)
+    
+    # Basic metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    f1_weighted = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+    f1_macro = f1_score(y_test, y_pred, average='macro', zero_division=0)
+    
+    # Top-3 accuracy
     top3_accuracy = 0
     for i, true_label in enumerate(y_test):
         top3_indices = y_pred_proba[i].argsort()[-3:][::-1]
@@ -132,7 +144,94 @@ def load_or_train_model():
         if true_label in top3_labels:
             top3_accuracy += 1
     top3_accuracy = top3_accuracy / len(y_test)
+    
+    # Top-5 accuracy
+    top5_accuracy = 0
+    for i, true_label in enumerate(y_test):
+        top5_indices = y_pred_proba[i].argsort()[-5:][::-1]
+        top5_labels = [model.classes_[idx] for idx in top5_indices]
+        if true_label in top5_labels:
+            top5_accuracy += 1
+    top5_accuracy = top5_accuracy / len(y_test)
+    
+    # Feature importances from RandomForest
+    feature_importances = [
+        {"feature": name, "importance": round(float(imp), 4)}
+        for name, imp in zip(feature_names, model.feature_importances_)
+    ]
+    feature_importances.sort(key=lambda x: x['importance'], reverse=True)
+    
+    # Classification report as dict (top 15 classes by support)
+    report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+    per_class = []
+    for cls_name, metrics in report.items():
+        if cls_name in ['accuracy', 'macro avg', 'weighted avg']:
+            continue
+        per_class.append({
+            "class": cls_name,
+            "precision": round(metrics['precision'], 3),
+            "recall": round(metrics['recall'], 3),
+            "f1": round(metrics['f1-score'], 3),
+            "support": int(metrics['support'])
+        })
+    per_class.sort(key=lambda x: x['support'], reverse=True)
+    
+    # Dataset stats
+    dataset_raw = pd.read_csv(dataset_path)
+    dataset_raw['Zscore'] = pd.to_numeric(dataset_raw['Zscore'], errors='coerce')
+    
+    # Build and store all metrics
+    model_metrics = {
+        "accuracy": round(float(accuracy), 4),
+        "top3_accuracy": round(float(top3_accuracy), 4),
+        "top5_accuracy": round(float(top5_accuracy), 4),
+        "f1_weighted": round(float(f1_weighted), 4),
+        "f1_macro": round(float(f1_macro), 4),
+        "train_size": len(X_train),
+        "test_size": len(X_test),
+        "test_split": 0.2,
+        "num_classes": len(model.classes_),
+        "feature_importances": feature_importances,
+        "per_class_top15": per_class[:15],
+        "hyperparameters": {
+            "n_estimators": 100,
+            "max_depth": 25,
+            "min_samples_split": 5,
+            "min_samples_leaf": 2,
+            "max_features": "sqrt",
+            "class_weight": "balanced",
+            "random_state": 42
+        },
+        "dataset_info": {
+            "total_rows": len(dataset_raw),
+            "rows_after_cleaning": len(dataset),
+            "num_features": 3,
+            "features": ["Z-Score (numeric)", "Stream (categorical, label-encoded)", "District (categorical, label-encoded)"],
+            "target": "Matched_Course_University",
+            "num_streams": int(dataset_raw['Stream'].nunique()),
+            "num_districts": int(dataset_raw['District'].nunique()),
+            "num_courses": int(dataset_raw['Matched_Course_University'].nunique()),
+            "zscore_min": round(float(dataset_raw['Zscore'].min()), 2),
+            "zscore_max": round(float(dataset_raw['Zscore'].max()), 2),
+            "zscore_mean": round(float(dataset_raw['Zscore'].mean()), 2),
+            "preprocessing": [
+                "Converted Z-Score to numeric (coerced errors to NaN)",
+                "Dropped rows with missing Z-Score values",
+                "Label-encoded Stream and District columns",
+                "Applied class_weight='balanced' to handle class imbalance"
+            ]
+        }
+    }
+    
+    # Save metrics
+    with open(metrics_path, 'w') as f:
+        json.dump(model_metrics, f, indent=2)
+    
+    print(f"Model Accuracy: {accuracy:.2%}")
     print(f"Top-3 Accuracy: {top3_accuracy:.2%}")
+    print(f"Top-5 Accuracy: {top5_accuracy:.2%}")
+    print(f"F1 (weighted): {f1_weighted:.4f}")
+    print(f"Training samples: {len(X_train)}, Test samples: {len(X_test)}")
     
     # Save model
     with open(model_path, 'wb') as f:
@@ -143,7 +242,7 @@ def load_or_train_model():
             'district': district_encoder
         }, f)
     
-    print("Model trained and saved!")
+    print("Model trained, evaluated, and saved!")
 
 # Load model on startup
 @app.on_event("startup")
@@ -165,6 +264,13 @@ def get_options():
     streams = sorted(dataset['Stream'].unique().tolist())
     
     return {"districts": districts, "streams": streams}
+
+@app.get("/api/model-info")
+def get_model_info():
+    """Get model evaluation metrics, hyperparameters, and dataset info"""
+    if not model_metrics:
+        return {"error": "Metrics not available. Model may need retraining."}
+    return model_metrics
 
 @app.post("/api/predict")
 def predict(request: PredictionRequest):
