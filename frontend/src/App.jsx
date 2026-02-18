@@ -79,145 +79,158 @@ function App() {
 
   return (
     <div className="container">
-      <div className="card">
-        <h1>Student Course & University Prediction</h1>
-        <p>Enter your details to get a prediction</p>
+      <h1>Student Course & University Prediction</h1>
+      <p className="subtitle">Enter your details to get a prediction</p>
 
-        {optionsLoading && <p className="loading">Loading options...</p>}
+      {error && (
+        <div className="error">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Z-Score</label>
-            <input
-              type="number"
-              step="any"
-              value={zscore}
-              onChange={(e) => setZscore(e.target.value)}
-              placeholder="Enter Z-score"
-              required
-              disabled={loading || optionsLoading}
-            />
-          </div>
+      <div className="three-columns">
+        {/* Column 1: Form */}
+        <div className="panel panel-form">
+          <h2 className="panel-title">Input Details</h2>
 
-          <div className="form-group">
-            <label>Stream</label>
-            <select
-              value={stream}
-              onChange={(e) => setStream(e.target.value)}
-              required
-              disabled={loading || optionsLoading}
-            >
-              <option value="">Select Stream</option>
-              {streams.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
+          {optionsLoading && <p className="loading">Loading options...</p>}
 
-          <div className="form-group">
-            <label>District</label>
-            <select
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              required
-              disabled={loading || optionsLoading}
-            >
-              <option value="">Select District</option>
-              {districts.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          </div>
-
-          <button type="submit" disabled={loading || optionsLoading} className="submit-btn">
-            {loading ? 'Predicting...' : 'Predict'}
-          </button>
-        </form>
-
-        {error && (
-          <div className="error">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {prediction && (
-          <div className="prediction">
-            <h2>Prediction Result</h2>
-            <div className="prediction-main">
-              <p className="prediction-text">{prediction.prediction}</p>
-              <p className="confidence">
-                Confidence: {(prediction.confidence * 100).toFixed(1)}%
-              </p>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Z-Score</label>
+              <input
+                type="number"
+                step="any"
+                value={zscore}
+                onChange={(e) => setZscore(e.target.value)}
+                placeholder="Enter Z-score"
+                required
+                disabled={loading || optionsLoading}
+              />
             </div>
-            
-            {prediction.top_3 && prediction.top_3.length > 1 && (
-              <div className="top-predictions">
-                <h3>Top 3 Recommendations:</h3>
-                <ul>
-                  {prediction.top_3.map((item, index) => (
-                    <li key={index} className={index === 0 ? 'top-choice' : ''}>
-                      <span className="rank">#{index + 1}</span>
-                      <span className="course">{item.course}</span>
-                      <span className="conf">{(item.confidence * 100).toFixed(1)}%</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
 
-            <button onClick={handleExplain} disabled={explaining} className="explain-btn">
-              {explaining ? 'Analyzing...' : '🔍 Explain Why'}
-            </button>
-
-            {explanation && (
-              <div className="explanation">
-                <h3>Why this prediction? (SHAP Analysis)</h3>
-
-                {explanation.summary && (
-                  <div className="explain-summary">
-                    <p>{explanation.summary}</p>
-                  </div>
-                )}
-
-                {explanation.simple_explanations?.map((item, index) => (
-                  <div key={index} className="simple-explain-card">
-                    <span className="simple-icon">{item.icon}</span>
-                    <p className="simple-text">{item.text}</p>
-                  </div>
+            <div className="form-group">
+              <label>Stream</label>
+              <select
+                value={stream}
+                onChange={(e) => setStream(e.target.value)}
+                required
+                disabled={loading || optionsLoading}
+              >
+                <option value="">Select Stream</option>
+                {streams.map(s => (
+                  <option key={s} value={s}>{s}</option>
                 ))}
+              </select>
+            </div>
 
-                <h4 className="technical-heading">Technical Details</h4>
-                <p className="explanation-subtitle">Feature contributions to: <strong>{explanation.predicted_course}</strong></p>
-                <div className="shap-bars">
-                  {explanation.contributions?.map((item, index) => {
-                    const maxVal = Math.max(...explanation.contributions.map(c => Math.abs(c.shap_value)))
-                    const barWidth = maxVal > 0 ? (Math.abs(item.shap_value) / maxVal) * 100 : 0
-                    return (
-                      <div key={index} className="shap-row">
-                        <div className="shap-label">
-                          <span className="shap-feature">{item.feature}</span>
-                          <span className="shap-input">= {item.value}</span>
-                        </div>
-                        <div className="shap-bar-container">
-                          <div
-                            className={`shap-bar ${item.impact}`}
-                            style={{ width: `${barWidth}%` }}
-                          />
-                          <span className={`shap-val ${item.impact}`}>
-                            {item.shap_value > 0 ? '+' : ''}{item.shap_value.toFixed(4)}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                <p className="explanation-note">
-                  <strong>Green (positive)</strong> = pushes toward this course. <strong>Red (negative)</strong> = pushes away from it.
+            <div className="form-group">
+              <label>District</label>
+              <select
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                required
+                disabled={loading || optionsLoading}
+              >
+                <option value="">Select District</option>
+                {districts.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+
+            <button type="submit" disabled={loading || optionsLoading} className="submit-btn">
+              {loading ? 'Predicting...' : 'Predict'}
+            </button>
+          </form>
+        </div>
+
+        {/* Column 2: Prediction Result */}
+        <div className="panel panel-prediction">
+          <h2 className="panel-title">Prediction Result</h2>
+          {!prediction ? (
+            <div className="panel-empty">Submit the form to see predictions</div>
+          ) : (
+            <>
+              <div className="prediction-main">
+                <p className="prediction-text">{prediction.prediction}</p>
+                <p className="confidence">
+                  Confidence: {(prediction.confidence * 100).toFixed(1)}%
                 </p>
               </div>
-            )}
-          </div>
-        )}
+
+              {prediction.top_3 && prediction.top_3.length > 1 && (
+                <div className="top-predictions">
+                  <h3>Top 3 Recommendations:</h3>
+                  <ul>
+                    {prediction.top_3.map((item, index) => (
+                      <li key={index} className={index === 0 ? 'top-choice' : ''}>
+                        <span className="rank">#{index + 1}</span>
+                        <span className="course">{item.course}</span>
+                        <span className="conf">{(item.confidence * 100).toFixed(1)}%</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button onClick={handleExplain} disabled={explaining} className="explain-btn">
+                {explaining ? 'Analyzing...' : '🔍 Explain Why →'}
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Column 3: SHAP Explanation */}
+        <div className="panel panel-explanation">
+          <h2 className="panel-title">Why this prediction?</h2>
+          {!explanation ? (
+            <div className="panel-empty">Click "Explain Why" to see SHAP analysis</div>
+          ) : (
+            <>
+              {explanation.summary && (
+                <div className="explain-summary">
+                  <p>{explanation.summary}</p>
+                </div>
+              )}
+
+              {explanation.simple_explanations?.map((item, index) => (
+                <div key={index} className="simple-explain-card">
+                  <span className="simple-icon">{item.icon}</span>
+                  <p className="simple-text">{item.text}</p>
+                </div>
+              ))}
+
+              <h4 className="technical-heading">Technical Details</h4>
+              <div className="shap-bars">
+                {explanation.contributions?.map((item, index) => {
+                  const maxVal = Math.max(...explanation.contributions.map(c => Math.abs(c.shap_value)))
+                  const barWidth = maxVal > 0 ? (Math.abs(item.shap_value) / maxVal) * 100 : 0
+                  return (
+                    <div key={index} className="shap-row">
+                      <div className="shap-label">
+                        <span className="shap-feature">{item.feature}</span>
+                        <span className="shap-input">= {item.value}</span>
+                      </div>
+                      <div className="shap-bar-container">
+                        <div
+                          className={`shap-bar ${item.impact}`}
+                          style={{ width: `${barWidth}%` }}
+                        />
+                        <span className={`shap-val ${item.impact}`}>
+                          {item.shap_value > 0 ? '+' : ''}{item.shap_value.toFixed(4)}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="explanation-note">
+                <strong>Green</strong> = pushes toward this course. <strong>Red</strong> = pushes away.
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

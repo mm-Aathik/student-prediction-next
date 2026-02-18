@@ -2,26 +2,66 @@
   width: 100%;
 }
 
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 2.5rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-}
-
 h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
   color: #171717;
   text-align: center;
 }
 
-.card > p {
+.subtitle {
   text-align: center;
   color: #666;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
+.error {
+  padding: 0.75rem 1rem;
+  background: #fff5f5;
+  border: 2px solid #feb2b2;
+  border-radius: 10px;
+  color: #c53030;
+  margin-bottom: 1rem;
+}
+
+/* === 3-Column Grid === */
+.three-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.panel {
+  background: white;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.panel-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* === Form Panel === */
 .loading {
   text-align: center;
   color: #666;
@@ -29,23 +69,24 @@ h1 {
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-group label {
   display: block;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   color: #171717;
+  font-size: 0.9rem;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 0.875rem;
+  padding: 0.7rem;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.2s;
 }
 
@@ -64,16 +105,16 @@ h1 {
 
 .submit-btn {
   width: 100%;
-  padding: 1rem;
+  padding: 0.85rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -86,58 +127,41 @@ h1 {
   cursor: not-allowed;
 }
 
-.error {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: #fff5f5;
-  border: 2px solid #feb2b2;
-  border-radius: 10px;
-  color: #c53030;
-}
-
-.prediction {
-  margin-top: 1.5rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-  border: 2px solid #b8dcc2;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.prediction h2 {
-  margin-bottom: 1rem;
-  color: #15803d;
-  font-size: 1.5rem;
+/* === Prediction Panel === */
+.panel-prediction {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #d1fae5;
 }
 
 .prediction-main {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
 }
 
 .prediction-text {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #166534;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
 }
 
 .confidence {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #15803d;
   font-weight: 500;
 }
 
 .top-predictions {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #b8dcc2;
+  padding-top: 1rem;
+  border-top: 1px solid #d1fae5;
   text-align: left;
 }
 
 .top-predictions h3 {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #15803d;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   text-align: center;
 }
 
@@ -150,16 +174,17 @@ h1 {
 .top-predictions li {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  border: 1px solid #b8dcc2;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.4rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  border: 1px solid #d1fae5;
+  font-size: 0.85rem;
 }
 
 .top-predictions li.top-choice {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   border: 2px solid #15803d;
   font-weight: 600;
 }
@@ -167,7 +192,7 @@ h1 {
 .top-predictions .rank {
   font-weight: 700;
   color: #15803d;
-  min-width: 2rem;
+  min-width: 1.75rem;
 }
 
 .top-predictions .course {
@@ -178,26 +203,27 @@ h1 {
 .top-predictions .conf {
   font-weight: 600;
   color: #15803d;
-  min-width: 4rem;
+  min-width: 3rem;
   text-align: right;
 }
 
 .explain-btn {
-  margin-top: 1.5rem;
-  padding: 0.7rem 1.5rem;
+  margin-top: auto;
+  padding: 0.7rem 1.25rem;
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  text-align: center;
+  width: 100%;
 }
 
 .explain-btn:hover:not(:disabled) {
   background: #1d4ed8;
-  transform: translateY(-1px);
 }
 
 .explain-btn:disabled {
@@ -205,44 +231,36 @@ h1 {
   cursor: not-allowed;
 }
 
-.explanation {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 10px;
-  border: 1px solid #b8dcc2;
-  text-align: left;
-}
-
-.explanation h3 {
-  color: #1e293b;
-  margin-bottom: 0.75rem;
-  font-size: 1.1rem;
+/* === Explanation Panel === */
+.panel-explanation {
+  background: #fafbff;
+  border: 1px solid #e2e8f0;
 }
 
 .explain-summary {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
   border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
   color: #166534;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .simple-explain-card {
   display: flex;
-  gap: 0.75rem;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  background: #f8fafc;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  margin-bottom: 0.5rem;
+  background: white;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
+  align-items: flex-start;
 }
 
 .simple-icon {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   line-height: 1;
   flex-shrink: 0;
   margin-top: 2px;
@@ -250,47 +268,33 @@ h1 {
 
 .simple-text {
   color: #334155;
-  font-size: 0.95rem;
-  margin-bottom: 0.4rem;
-  line-height: 1.5;
-}
-
-.simple-analogy {
-  color: #64748b;
   font-size: 0.85rem;
-  font-style: italic;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .technical-heading {
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   margin-bottom: 0.5rem;
   color: #475569;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-.explanation-subtitle {
-  color: #64748b;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
 }
 
 .shap-bars {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .shap-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .shap-label {
-  min-width: 140px;
+  min-width: 80px;
   display: flex;
   flex-direction: column;
 }
@@ -298,23 +302,23 @@ h1 {
 .shap-feature {
   font-weight: 600;
   color: #334155;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 .shap-input {
   color: #94a3b8;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
 
 .shap-bar-container {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .shap-bar {
-  height: 22px;
+  height: 18px;
   border-radius: 4px;
   min-width: 4px;
   transition: width 0.4s ease;
@@ -331,7 +335,7 @@ h1 {
 .shap-val {
   font-family: monospace;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -344,22 +348,29 @@ h1 {
 }
 
 .explanation-note {
-  margin-top: 1rem;
-  font-size: 0.8rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
   color: #94a3b8;
+}
+
+/* === Responsive: stack on small screens === */
+@media (max-width: 1024px) {
+  .three-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    min-height: auto;
+  }
 }
 
 @media (max-width: 600px) {
   body {
     padding: 1rem;
   }
-  
-  .card {
-    padding: 1.5rem;
-  }
-  
+
   h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
 }
 
