@@ -30,10 +30,20 @@ Open http://localhost:5173
 ### Option 2: Run Manually
 
 #### 1. Setup Backend
+
+**Linux/Mac:**
 ```bash
 cd backend
 python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Windows:**
+```cmd
+cd backend
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
@@ -46,15 +56,17 @@ npm install
 #### 3. Run
 
 **Terminal 1 - Backend:**
+
+Linux/Mac: `./run-backend.sh` | Windows: `run-backend.bat` or:
 ```bash
-./run-backend.sh
-# Or: cd backend && source venv/bin/activate && uvicorn app:app --reload --port 8000
+cd backend && source venv/bin/activate && uvicorn app:app --reload --port 8000
 ```
 
 **Terminal 2 - Frontend:**
+
+Linux/Mac: `./run-frontend.sh` | Windows: `run-frontend.bat` or:
 ```bash
-./run-frontend.sh
-# Or: cd frontend && npm run dev
+cd frontend && npm run dev
 ```
 
 Open http://localhost:5173
